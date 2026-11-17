@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slide Compare</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Slide Compare</h1>
+    <label class="sync">
+      <input type="checkbox" id="sync" checked>
+      Sync slides
+    </label>
+    <span class="hint">← → keys to move · files stay in your browser</span>
+  </header>
+
+  <main class="panes">
+    <section class="pane" data-side="left">
+      <div class="pane-head">
+        <input type="file" accept="application/pdf,.pdf" aria-label="Upload left deck">
+        <span class="name">No file loaded</span>
+      </div>
+      <div class="viewer">
+        <p class="empty">Upload the first deck (PDF)</p>
+        <canvas hidden></canvas>
+      </div>
+      <div class="controls">
+        <button class="prev" type="button">◀ Prev</button>
+        <span class="counter">– / –</span>
+        <button class="next" type="button">Next ▶</button>
+      </div>
+    </section>
+
+    <section class="pane" data-side="right">
+      <div class="pane-head">
+        <input type="file" accept="application/pdf,.pdf" aria-label="Upload right deck">
+        <span class="name">No file loaded</span>
+      </div>
+      <div class="viewer">
+        <p class="empty">Upload the second deck (PDF)</p>
+        <canvas hidden></canvas>
+      </div>
+      <div class="controls">
+        <button class="prev" type="button">◀ Prev</button>
+        <span class="counter">– / –</span>
+        <button class="next" type="button">Next ▶</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
