@@ -102,6 +102,83 @@ async function render(s) {
   s.next.disabled = s.page >= s.total;
 }
 
+// Flip both decks at once, regardless of the sync toggle
+function flipBoth(delta) {
+  Object.values(sides).forEach((s) => {
+    if (s.doc) goTo(s, s.page + delta, false);
+  });
+}
+
+document.getElementById("flipBack").addEventListener("click", () => flipBoth(-1));
+document.getElementById("flipNext").addEventListener("click", () => flipBoth(1));
+
+// Export both decks as one A3 landscape PDF: left slide | right slide per page
+const exportBtn = document.getElementById("exportPdf");
+const statusEl = document.getElementById("status");
+
+exportBtn.addEventListener("click", async () => {
+  const loaded = Object.values(sides).filter((s) => s.doc);
+  if (loaded.length === 0) {
+    alert("Upload at least one PDF first.");
+    return;
+  }
+  if (!window.jspdf) {
+    alert("PDF library failed to load. Check your internet connection.");
+    return;
+  }
+
+  exportBtn.disabled = true;
+  const pageCount = Math.max(...loaded.map((s) => s.total));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" });
+
+    // A3 landscape is 420 x 297 mm. Two slots of 195 mm with a 10 mm margin and a 10 mm gap.
+    const W = 420, H = 297, M = 10, GAP = 10;
+    const slotW = (W - 2 * M - GAP) / 2;
+    const slotH = H - 2 * M;
+    const slotX = [M, M + slotW + GAP];
+
+    for (let n = 1; n <= pageCount; n++) {
+      statusEl.textContent = `Exporting page ${n} of ${pageCount}…`;
+      if (n > 1) pdf.addPage("a3", "landscape");
+
+      for (const s of Object.values(sides)) {
+        if (!s.doc || n > s.total) continue;
+        const page = await s.doc.getPage(n);
+        const base = page.getViewport({ scale: 1 });
+        const canvas = document.createElement("canvas");
+        const scale = 2000 / base.width; // high-res for print
+        const vp = page.getViewport({ scale });
+        canvas.width = Math.floor(vp.width);
+        canvas.height = Math.floor(vp.height);
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+
+        const ratio = canvas.height / canvas.width;
+        const w = Math.min(slotW, slotH / ratio);
+        const h = w * ratio;
+        const x = slotX[s.side === "left" ? 0 : 1] + (slotW - w) / 2;
+        const y = M + (slotH - h) / 2;
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", x, y, w, h);
+      }
+
+      // Thin divider between the two slots
+      pdf.setDrawColor(180);
+      pdf.setLineDashPattern([2, 2], 0);
+      pdf.line(W / 2, M, W / 2, H - M);
+    }
+
+    pdf.save("slide-compare-A3.pdf");
+    statusEl.textContent = `Done: ${pageCount} page(s).`;
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "Export failed. See console.";
+  } finally {
+    exportBtn.disabled = false;
+  }
+});
+
 // Keyboard navigation: both panes move together when sync is on
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT" && e.target.type !== "checkbox") return;

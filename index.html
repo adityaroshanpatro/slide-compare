@@ -13,6 +13,12 @@
       <input type="checkbox" id="sync" checked>
       Sync slides
     </label>
+    <div class="shared">
+      <button id="flipBack" type="button">◀◀ Flip both back</button>
+      <button id="flipNext" type="button">Flip both ▶▶</button>
+      <button id="exportPdf" type="button">Export A3 PDF</button>
+      <span id="status" class="status"></span>
+    </div>
     <span class="hint">← → keys to move · files stay in your browser</span>
   </header>
 
@@ -51,6 +57,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

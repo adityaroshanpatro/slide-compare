@@ -29,6 +29,31 @@ body {
   font-weight: 600;
 }
 
+.shared {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shared button {
+  background: #3a3e4a;
+  color: #e8e8ea;
+  border: 0;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.shared button:hover:not(:disabled) { background: #4a4f5e; }
+.shared button:disabled { opacity: 0.4; cursor: default; }
+
+.status {
+  font-size: 0.8rem;
+  color: #a6a9b4;
+}
+
 .sync {
   display: flex;
   align-items: center;
