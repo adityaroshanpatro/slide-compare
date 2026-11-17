@@ -113,10 +113,10 @@ document.getElementById("flipBack").addEventListener("click", () => flipBoth(-1)
 document.getElementById("flipNext").addEventListener("click", () => flipBoth(1));
 
 // Export both decks as one A3 landscape PDF: left slide | right slide per page
-const exportBtn = document.getElementById("exportPdf");
 const statusEl = document.getElementById("status");
 
-exportBtn.addEventListener("click", async () => {
+// format: "a3" or "a4". Both are landscape, two slides per page.
+async function exportPdf(format, btn) {
   const loaded = Object.values(sides).filter((s) => s.doc);
   if (loaded.length === 0) {
     alert("Upload at least one PDF first.");
@@ -127,22 +127,23 @@ exportBtn.addEventListener("click", async () => {
     return;
   }
 
-  exportBtn.disabled = true;
+  btn.disabled = true;
   const pageCount = Math.max(...loaded.map((s) => s.total));
 
   try {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" });
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format });
 
-    // A3 landscape is 420 x 297 mm. Two slots of 195 mm with a 10 mm margin and a 10 mm gap.
-    const W = 420, H = 297, M = 10, GAP = 10;
+    // A3 landscape: 420 x 297 mm. A4 landscape: 297 x 210 mm.
+    const [W, H] = format === "a4" ? [297, 210] : [420, 297];
+    const M = Math.round(W / 42), GAP = M;
     const slotW = (W - 2 * M - GAP) / 2;
     const slotH = H - 2 * M;
     const slotX = [M, M + slotW + GAP];
 
     for (let n = 1; n <= pageCount; n++) {
       statusEl.textContent = `Exporting page ${n} of ${pageCount}…`;
-      if (n > 1) pdf.addPage("a3", "landscape");
+      if (n > 1) pdf.addPage(format, "landscape");
 
       for (const s of Object.values(sides)) {
         if (!s.doc || n > s.total) continue;
@@ -169,15 +170,18 @@ exportBtn.addEventListener("click", async () => {
       pdf.line(W / 2, M, W / 2, H - M);
     }
 
-    pdf.save("slide-compare-A3.pdf");
+    pdf.save(`slide-compare-${format.toUpperCase()}.pdf`);
     statusEl.textContent = `Done: ${pageCount} page(s).`;
   } catch (err) {
     console.error(err);
     statusEl.textContent = "Export failed. See console.";
   } finally {
-    exportBtn.disabled = false;
+    btn.disabled = false;
   }
-});
+}
+
+document.getElementById("exportA3").addEventListener("click", (e) => exportPdf("a3", e.currentTarget));
+document.getElementById("exportA4").addEventListener("click", (e) => exportPdf("a4", e.currentTarget));
 
 // Keyboard navigation: both panes move together when sync is on
 document.addEventListener("keydown", (e) => {
